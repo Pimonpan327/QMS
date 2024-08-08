@@ -1,0 +1,23 @@
+﻿@page "/logout"
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject NavigationManager NavigationManager
+@inject ILogger<UserProfile> Logger
+
+<h3>ออกจากระบบ</h3>
+
+<p>กำลังออกจากระบบ...</p>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await AuthenticationStateProvider.SetUserAuthenticated(null);
+            NavigationManager.NavigateTo("/");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error logging out.");
+        }
+    }
+}

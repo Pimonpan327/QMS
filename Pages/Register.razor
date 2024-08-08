@@ -1,0 +1,82 @@
+﻿@page "/Register"
+@using Microsoft.EntityFrameworkCore
+@using QMS.Data.Entities
+@inject QMS.Services.AccountService AccountService
+@inject ILogger<Index> Logger
+@inject NavigationManager NavigationManager
+
+<h1>ลงทะเบียน</h1>
+
+<EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="PersonalId">รหัสบัตรประชาชน</label>
+        <InputText id="PersonalId" @bind-Value="model.PersonalId" class="form-control" />
+        <ValidationMessage For="@(() => model.PersonalId)" />
+    </div>
+    <div class="form-group">
+        <label for="FirstName">ชื่อจริง</label>
+        <InputText id="FirstName" @bind-Value="model.FirstName" class="form-control" />
+        <ValidationMessage For="@(() => model.FirstName)" />
+    </div>
+    <div class="form-group">
+        <label for="LastName">นามสกุล</label>
+        <InputText id="LastName" @bind-Value="model.LastName" class="form-control" />
+        <ValidationMessage For="@(() => model.LastName)" />
+    </div>
+    <div class="form-group">
+        <label for="PhoneNumber">เบอร์โทรศัพท์</label>
+        <InputText id="PhoneNumber" @bind-Value="model.PhoneNumber" class="form-control" />
+        <ValidationMessage For="@(() => model.PhoneNumber)" />
+    </div>
+    <div class="form-group">
+        <label for="Password">รหัสผ่าน</label>
+        <InputText id="Password" type="password" @bind-Value="model.Password" class="form-control" />
+        <ValidationMessage For="@(() => model.Password)" />
+    </div>
+    <div class="form-group">
+        <label for="ConfirmPassword">ยืนยันรหัสผ่าน</label>
+        <InputText id="ConfirmPassword" type="password" @bind-Value="model.ConfirmPassword" class="form-control" />
+        <ValidationMessage For="@(() => model.ConfirmPassword)" />
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-2">ลงทะเบียน</button>
+</EditForm>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@code {
+    private RegisterViewModel model = new RegisterViewModel();
+    private string errorMessage;
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            if (model.Password != model.ConfirmPassword)
+            {
+                errorMessage = "รหัสผ่านไม่ตรงกัน กรุณาลองใหม่";
+                return;
+            }
+
+            await AccountService.RegisterAsync(model);
+            NavigationManager.NavigateTo("/registration-successful");
+        }
+        catch (InvalidOperationException ex)
+        {
+            // จัดการข้อผิดพลาดที่มาจากการตรวจสอบข้อมูลซ้ำ
+            errorMessage = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            // จัดการข้อผิดพลาดทั่วไป
+            errorMessage = "An unexpected error occurred. Please try again.";
+            Console.WriteLine(ex.Message);
+        }
+    }
+}

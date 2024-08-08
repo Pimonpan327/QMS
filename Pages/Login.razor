@@ -1,0 +1,76 @@
+﻿@page "/"
+@using Microsoft.AspNetCore.Components.Forms
+@using QMS.Data
+@using QMS.Data.Entities
+@using QMS.Services
+@inject NavigationManager NavigationManager
+@inject CustomAuthenticationStateProvider AuthStateProvider
+@inject AccountService AccountService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject ILogger<Login> Logger
+
+<h1>เข้าสู่ระบบ</h1>
+
+<EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="PersonalId">Personal ID</label>
+        <InputText id="PersonalId" @bind-Value="model.PersonalId" class="form-control" />
+        <ValidationMessage For="@(() => model.PersonalId)" />
+    </div>
+    <div class="form-group">
+        <label for="Password">Password</label>
+        <InputText id="Password" type="password" @bind-Value="model.Password" class="form-control" />
+        <ValidationMessage For="@(() => model.Password)" />
+    </div>
+    <div class="form-group">
+        <label for="RememberMe">Remember Me</label>
+        <InputCheckbox id="RememberMe" @bind-Value="model.RememberMe" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">เข้าสู่ระบบ</button>
+</EditForm>
+
+<p>ยังไม่มีบัญชี? <button class="btn btn-link" @onclick="NavigateToRegisterPage">ลงทะเบียนที่นี่</button></p>
+
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@code {
+    private LoginViewModel model = new LoginViewModel();
+    private string errorMessage;
+
+    private async Task HandleValidSubmit()
+    {
+        try
+        {
+            var user = await AccountService.LoginAsync(model.PersonalId, model.Password);
+
+            if (user != null)
+            {
+                // การเข้าสู่ระบบสำเร็จ
+                (AuthenticationStateProvider as CustomAuthenticationStateProvider)?.SetUserAuthenticated(user);
+
+                NavigationManager.NavigateTo("/home");
+            }
+            else
+            {
+                errorMessage = "Invalid credentials. Please try again.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "An unexpected error occurred. Please try again.";
+            Logger.LogError(ex, "Login error.");
+        }
+    }
+
+    private void NavigateToRegisterPage()
+    {
+        NavigationManager.NavigateTo("/register");
+    }
+}

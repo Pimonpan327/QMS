@@ -1,0 +1,32 @@
+﻿@page "/home"
+@inject NavigationManager NavigationManager
+
+<h1>Welcome to Home Page</h1>
+
+<button class="btn btn-primary" @onclick="NavigateToBooking">จองคิวออนไลน์</button>
+<button class="btn btn-primary" @onclick="NavigateToProfile">โปรไฟล์</button>
+<button class="btn btn-primary" @onclick="Logout">รายละเอียดการจอง</button>
+<button class="btn btn-danger" @onclick="Logout">ออกจากระบบ</button>
+
+@code {
+
+    private void NavigateToBooking()
+    {
+        NavigationManager.NavigateTo("/Booking");
+    }
+
+    private void NavigateToProfile()
+    {
+        NavigationManager.NavigateTo("/user-profile");
+    }
+
+    private void NavigateToEditProfile()
+    {
+        NavigationManager.NavigateTo("/edit-user-profile");
+    }
+
+    private void Logout()
+    {
+        NavigationManager.NavigateTo("/logout");
+    }
+}

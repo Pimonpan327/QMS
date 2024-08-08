@@ -1,0 +1,66 @@
+﻿@page "/user-profile"
+@using System.Security.Claims
+@using QMS.Data.Entities
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject AccountService AccountService
+@inject NavigationManager NavigationManager
+@inject ILogger<UserProfile> Logger
+
+<h2>ข้อมูลผู้ใช้งาน</h2>
+
+@if (user != null)
+{
+    <div>
+        <label>รหัสบัตรประชาชน:</label>
+        <span>@user.PersonalId</span>
+    </div>
+    <div>
+        <label>ชื่อ:</label>
+        <span>@user.FirstName</span>
+    </div>
+    <div>
+        <label>นามสกุล:</label>
+        <span>@user.LastName</span>
+    </div>
+    <div>
+        <label>เบอร์โทร:</label>
+        <span>@user.PhoneNumber</span>
+    </div>
+}
+else
+{
+    <p>Loading...</p>
+}
+
+<button class="btn btn-danger" @onclick="NavigateToEditProfile">แก้ไขข้อมูลส่วนตัว</button>
+
+@code {
+    private User user;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var authState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+            var userId = authState.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier)?.Value;
+
+            if (userId != null)
+            {
+                user = await AccountService.GetUserByIdAsync(userId);
+            }
+            else
+            {
+                NavigationManager.NavigateTo("/");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error loading user profile.");
+        }
+    }
+
+    private void NavigateToEditProfile()
+    {
+        NavigationManager.NavigateTo("/edit-user-profile");
+    }
+}
